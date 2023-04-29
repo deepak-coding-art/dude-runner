@@ -1,6 +1,6 @@
 window.addEventListener("load", function () {
   // Get the device pixel ratio
-  const debug = false;
+  const debug = true;
   const dpr = window.devicePixelRatio || 1;
   const canvas = document.getElementById("canvas0");
   const mainMenu = document.getElementById("mainMenu");
@@ -10,7 +10,7 @@ window.addEventListener("load", function () {
   const ctx = canvas.getContext("2d");
   canvas.width = canvas.clientWidth * dpr;
   canvas.height = canvas.clientHeight * dpr;
-  const gameSpeed = 24;
+  let gameSpeed = 8;
   let avatar = "mc";
   let gameOver = false;
   let enemies = [];
@@ -72,7 +72,7 @@ window.addEventListener("load", function () {
       this.maxSpeed = 10;
       this.maxJumpSpeed = 20;
       this.vy = 0;
-      this.weight = 1;
+      this.weight = 1.25;
       this.fps = 50;
       this.frameTimer = 0;
       this.frameInterval = 1000 / this.fps;
@@ -121,6 +121,20 @@ window.addEventListener("load", function () {
         ) {
           gameOver = true;
         }
+
+        if (
+          this.collisionBox.x > enemy.collisionBox.x - 10 &&
+          !this.onGround()
+        ) {
+          enemy.maxFrame = 20;
+        }
+
+        if (
+          this.collisionBox.x > enemy.collisionBox.x - 100 &&
+          !this.onGround()
+        ) {
+          this.frameY = 2;
+        }
       });
 
       // Sprite animation
@@ -148,7 +162,9 @@ window.addEventListener("load", function () {
       this.y += this.vy;
       if (!this.onGround()) {
         this.vy += this.weight;
-        this.frameY = 1;
+        if (this.frameY !== 2) {
+          this.frameY = 1;
+        }
       } else {
         this.vy = 0;
         this.frameY = 0;
@@ -158,9 +174,9 @@ window.addEventListener("load", function () {
       }
 
       this.collisionBox = {
-        x: this.x + this.x * 0.3,
+        x: this.x + this.x * 0.35,
         y: this.y + this.y * 0.03,
-        width: this.width - this.width * 0.72,
+        width: this.width - this.width * 0.79,
         height: this.height - this.height * 0.15,
       };
     }
@@ -232,6 +248,11 @@ window.addEventListener("load", function () {
         this.width + this.speed3,
         this.height
       );
+
+      this.speed0 = gameSpeed / 8 / 8 / 8;
+      this.speed1 = gameSpeed / 8 / 8;
+      this.speed2 = gameSpeed / 8;
+      this.speed3 = gameSpeed;
     }
     update() {
       this.x0 -= this.speed0;
@@ -309,10 +330,14 @@ window.addEventListener("load", function () {
         this.markedForDeletion = true;
         score++;
         scoreCount.innerHTML = score;
+
+        // Increase speed
+        gameSpeed += Math.pow(0.9, gameSpeed);
+        if (gameSpeed > 25) gameSpeed = 25;
       }
       this.collisionBox = {
-        x: this.x + 50,
-        y: this.y + 80,
+        x: this.x + 55,
+        y: this.y + 90,
         width: this.width - 120,
         height: this.height - 100,
       };
@@ -323,7 +348,16 @@ window.addEventListener("load", function () {
     if (enemyTimer > enemyInterval + randomEnemyInterval) {
       enemies.push(new Enemy(canvas.width, canvas.height));
       enemyTimer = 0;
-      randomEnemyInterval = Math.random() * 1000 + 500;
+      randomEnemyInterval =
+        Math.random() *
+          (1000 - gameSpeed * 10 < 10 ? 10 : 1000 - gameSpeed * 10) +
+        (2500 - gameSpeed * 100 < 10 ? 10 : 2500 - gameSpeed * 100);
+      // console.log({
+      //   randomEnemyInterval,
+      //   gameSpeed,
+      //   rand: 1000 - gameSpeed * 10,
+      //   offset: 2500 - gameSpeed * 100 < 10 ? 10 : 2500 - gameSpeed * 100,
+      // });
     } else {
       enemyTimer += deltaTime;
     }
@@ -374,6 +408,7 @@ window.addEventListener("load", function () {
   }
 
   againButton.addEventListener("click", () => {
+    gameSpeed = 8;
     enemies = [];
     gameOver = false;
     score = 0;
@@ -396,7 +431,7 @@ window.addEventListener("load", function () {
 
     lastTime = 0;
     enemyTimer = 0;
-    enemyInterval = 1000;
+    enemyInterval = 100;
     randomEnemyInterval = Math.random() * 1000 + 500;
     animationId;
     lastFrameTime = 0;
