@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Runner Dude</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <!-- Background images -->
+    <img id="bg0" src="/assets/images/bg-layer-0.png" alt="bg-0" />
+    <img id="bg1" src="/assets/images/bg-layer-1.png" alt="bg-1" />
+    <img id="bg2" src="/assets/images/bg-layer-2.png" alt="bg-2" />
+    <img id="bg3" src="/assets/images/bg-layer-3.png" alt="bg-3" />
+
+    <!-- Mcdonald's image -->
+    <img id="mc" src="/assets/images/mc-donalds.png" alt="mc" />
+
+    <!-- skater image -->
+    <img id="skater" src="./assets/images/skater.png" alt="skater" />
+
+    <!-- wizard image -->
+    <img id="wizard" src="./assets/images/wizard.png" alt="wizard" />
+
+    <!-- Dog image -->
+    <img id="dog" src="./assets/images/dog.png" alt="dog" />
+
+    <!-- Main canvas -->
+    <canvas id="canvas0"></canvas>
+
+    <div id="mainMenu" class="menu-cont show">
+      <div class="main-menu">
+        <h1>Choose your avatar</h1>
+        <div class="avatars">
+          <button class="avatar" id="mc-btn">Mc-donald's</button>
+          <button class="avatar" id="skater-btn">Skater</button>
+          <button class="avatar" id="wizard-btn">Wizard</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameOverMenu" class="menu-cont">
+      <div class="gameOver-menu">
+        <h1>Game Over</h1>
+        <h2>Score: <span id="score">100</span></h2>
+        <button id="againBtn">Play Again</button>
+      </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+  </body>
+</html>
