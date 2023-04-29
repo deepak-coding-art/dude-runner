@@ -1,6 +1,6 @@
 window.addEventListener("load", function () {
   // Get the device pixel ratio
-  const debug = true;
+  const debug = false;
   const dpr = window.devicePixelRatio || 1;
   const canvas = document.getElementById("canvas0");
   const mainMenu = document.getElementById("mainMenu");
