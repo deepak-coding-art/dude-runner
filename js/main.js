@@ -11,6 +11,7 @@ window.addEventListener("load", function () {
   canvas.width = canvas.clientWidth * dpr;
   canvas.height = canvas.clientHeight * dpr;
   let gameSpeed = 8;
+  let highScore = localStorage.getItem("highScore") || 0;
   let avatar = "mc";
   let gameOver = false;
   let enemies = [];
@@ -177,7 +178,7 @@ window.addEventListener("load", function () {
         x: this.x + this.x * 0.35,
         y: this.y + this.y * 0.03,
         width: this.width - this.width * 0.79,
-        height: this.height - this.height * 0.15,
+        height: this.height - this.height * 0.2,
       };
     }
 
@@ -372,9 +373,13 @@ window.addEventListener("load", function () {
   function displayStatusText(context) {
     context.font = "40px helvetica";
     context.fillStyle = "black";
-    context.fillText("Score: " + score, 20, 50);
+    context.fillText("High Score: " + highScore, 20, 50);
     context.fillStyle = "white";
-    context.fillText("Score: " + score, 22, 52);
+    context.fillText("High Score: " + highScore, 22, 52);
+    context.fillStyle = "black";
+    context.fillText("Score: " + score, 20, 90);
+    context.fillStyle = "white";
+    context.fillText("Score: " + score, 22, 92);
   }
 
   let input;
@@ -390,6 +395,10 @@ window.addEventListener("load", function () {
 
   function animate(timeStamp) {
     if (gameOver) {
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("highScore", highScore);
+      }
       cancelAnimationFrame(animationId);
       gameOverMenu.classList.add("show");
       return;
