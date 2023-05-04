@@ -218,25 +218,31 @@ window.addEventListener("load", function () {
         this.width + this.speed0,
         this.height
       );
-      context.drawImage(this.image1, this.x1, this.y, this.width, this.height);
+      context.drawImage(
+        this.image1,
+        this.x1,
+        this.y + 100,
+        this.width,
+        this.height
+      );
       context.drawImage(
         this.image1,
         this.x1 + this.width,
-        this.y,
+        this.y + 100,
         this.width + this.speed1,
         this.height
       );
       context.drawImage(
         this.image2,
         this.x2,
-        this.y + 100,
+        this.y + 200,
         this.width,
         this.height
       );
       context.drawImage(
         this.image2,
         this.x2 + this.width,
-        this.y + 100,
+        this.y + 200,
         this.width + this.speed2,
         this.height
       );
