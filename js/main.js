@@ -10,7 +10,7 @@ window.addEventListener("load", function () {
   const ctx = canvas.getContext("2d");
   canvas.width = canvas.clientWidth * dpr;
   canvas.height = canvas.clientHeight * dpr;
-  let gameSpeed = 8;
+  let gameSpeed = 10;
   let highScore = localStorage.getItem("highScore") || 0;
   let avatar = "mc";
   let gameOver = false;
@@ -71,9 +71,9 @@ window.addEventListener("load", function () {
       this.frameY = 0;
       this.speed = 0;
       this.maxSpeed = 10;
-      this.maxJumpSpeed = 20;
+      this.maxJumpSpeed = 25;
       this.vy = 0;
-      this.weight = 1.25;
+      this.weight = 1.4;
       this.fps = 50;
       this.frameTimer = 0;
       this.frameInterval = 1000 / this.fps;
@@ -134,7 +134,7 @@ window.addEventListener("load", function () {
           this.collisionBox.x > enemy.collisionBox.x - 100 &&
           !this.onGround()
         ) {
-          this.frameY = 2;
+          // this.frameY = 2;
         }
       });
 
@@ -150,6 +150,7 @@ window.addEventListener("load", function () {
       // Controls
       if (input.keys.indexOf(" ") > -1 && this.onGround()) {
         this.vy -= this.maxJumpSpeed;
+        this.frameX = 0;
       } else {
         this.speed = 0;
       }
@@ -163,9 +164,7 @@ window.addEventListener("load", function () {
       this.y += this.vy;
       if (!this.onGround()) {
         this.vy += this.weight;
-        if (this.frameY !== 2) {
-          this.frameY = 1;
-        }
+        this.frameY = 1;
       } else {
         this.vy = 0;
         this.frameY = 0;
@@ -175,10 +174,10 @@ window.addEventListener("load", function () {
       }
 
       this.collisionBox = {
-        x: this.x + this.x * 0.35,
+        x: this.x + this.x * 0.48,
         y: this.y + this.y * 0.03,
-        width: this.width - this.width * 0.79,
-        height: this.height - this.height * 0.2,
+        width: this.width - this.width * 0.85,
+        height: this.height - this.height * 0.25,
       };
     }
 
@@ -271,15 +270,16 @@ window.addEventListener("load", function () {
   }
 
   class Enemy {
-    constructor(gameWidth, gameHeight) {
+    constructor(gameWidth, gameHeight, size = 1, number = 0) {
       this.gameWidth = gameWidth;
       this.gameHeight = gameHeight;
+      this.size = size;
       this.width = 200;
       this.height = 200;
       this.image = document.getElementById("dog");
-      this.x = this.gameWidth;
+      this.x = this.gameWidth + number;
       this.offsetY = 20;
-      this.y = this.gameHeight - this.height + this.offsetY;
+      this.y = this.gameHeight - this.height * this.size + this.offsetY;
       this.speed = gameSpeed;
       this.frameX = 0;
       this.maxFrame = 0;
@@ -313,8 +313,8 @@ window.addEventListener("load", function () {
         this.height,
         this.x,
         this.y,
-        this.width,
-        this.height
+        this.width * this.size,
+        this.height * this.size
       );
     }
 
@@ -329,25 +329,43 @@ window.addEventListener("load", function () {
       this.x -= this.speed;
       if (this.x < 0 - this.width) {
         this.markedForDeletion = true;
-        score++;
-        scoreCount.innerHTML = score;
 
         // Increase speed
         gameSpeed += Math.pow(0.9, gameSpeed);
         if (gameSpeed > 25) gameSpeed = 25;
       }
       this.collisionBox = {
-        x: this.x + 55,
-        y: this.y + 90,
-        width: this.width - 120,
-        height: this.height - 100,
+        x: this.x + 55 * this.size,
+        y: this.y + 90 * this.size,
+        width: this.width - 130 / this.size,
+        height: this.height - 100 / this.size,
       };
     }
   }
 
   function handleEnemies(deltaTime) {
     if (enemyTimer > enemyInterval + randomEnemyInterval) {
-      enemies.push(new Enemy(canvas.width, canvas.height));
+      let random = Math.ceil(randomNumberGen(0, 2));
+      let size = randomNumberGen(1.2, 0.8);
+      let distance = 0;
+      enemies.push(new Enemy(canvas.width, canvas.height, size, distance));
+      if (random > 1) {
+        for (let i = 0; i <= random - 1; i++) {
+          size = randomNumberGen(1.2, 0.8);
+          distance = (enemies.at(-1).width * enemies.at(-1).size) / 2;
+          if (i > 0) {
+            continue;
+            distance = enemies.at(-1).width * enemies.at(-1).size;
+            console.log(distance);
+          }
+          enemies.push(new Enemy(canvas.width, canvas.height, size, distance));
+        }
+      }
+
+      // size = randomNumberGen(1.2, 0.8);
+      // distance = (enemies.at(-1).width * enemies.at(-1).size) / 2;
+      // enemies.push(new Enemy(canvas.width, canvas.height, size, distance));
+
       enemyTimer = 0;
       randomEnemyInterval =
         Math.random() *
@@ -361,6 +379,13 @@ window.addEventListener("load", function () {
       // });
     } else {
       enemyTimer += deltaTime;
+    }
+    if (scoreCounter > 5) {
+      score++;
+      scoreCount.innerHTML = score;
+      scoreCounter = 0;
+    } else {
+      scoreCounter++;
     }
     enemies.forEach((enemy) => {
       enemy.draw(ctx);
@@ -392,6 +417,7 @@ window.addEventListener("load", function () {
   let randomEnemyInterval;
   let animationId;
   let lastFrameTime;
+  let scoreCounter;
 
   function animate(timeStamp) {
     if (gameOver) {
@@ -404,15 +430,17 @@ window.addEventListener("load", function () {
       return;
     }
     const deltaTime = timeStamp - lastTime;
-    lastTime = timeStamp;
-    lastFrameTime = timeStamp;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    background.draw(ctx);
-    background.update();
-    player.draw(ctx);
-    player.update(input, deltaTime, enemies);
-    handleEnemies(deltaTime);
-    displayStatusText(ctx);
+    if (deltaTime > 16) {
+      lastTime = timeStamp;
+      lastFrameTime = timeStamp;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      background.draw(ctx);
+      background.update();
+      player.draw(ctx);
+      player.update(input, deltaTime, enemies);
+      handleEnemies(deltaTime);
+      displayStatusText(ctx);
+    }
     animationId = requestAnimationFrame(animate);
   }
 
@@ -429,6 +457,7 @@ window.addEventListener("load", function () {
     enemyInterval = 1000;
     randomEnemyInterval = Math.random() * 1000 + 500;
     lastFrameTime = 0;
+    scoreCounter = 0;
     gameOverMenu.classList.remove("show");
     animate(0);
   });
@@ -444,8 +473,14 @@ window.addEventListener("load", function () {
     randomEnemyInterval = Math.random() * 1000 + 500;
     animationId;
     lastFrameTime = 0;
+    scoreCounter = 0;
     mainMenu.classList.remove("show");
     animate(0);
+  }
+
+  function randomNumberGen(min, max) {
+    // min and max included
+    return Math.random() * (max - min) + min;
   }
 
   document.getElementById("mc-btn").addEventListener("click", () => {
