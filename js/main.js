@@ -73,7 +73,7 @@ window.addEventListener("load", function () {
       this.maxSpeed = 10;
       this.maxJumpSpeed = 25;
       this.vy = 0;
-      this.weight = 1.4;
+      this.weight = 1.2;
       this.fps = 50;
       this.frameTimer = 0;
       this.frameInterval = 1000 / this.fps;
