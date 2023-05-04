@@ -4,7 +4,10 @@ window.addEventListener("load", function () {
   const dpr = window.devicePixelRatio || 1;
   const canvas = document.getElementById("canvas0");
   const mainMenu = document.getElementById("mainMenu");
-  const againButton = document.getElementById("againBtn");
+  const againMc = document.getElementById("again-mc-btn");
+  const againSkater = document.getElementById("again-skater-btn");
+  const againWizard = document.getElementById("again-wizard-btn");
+
   const gameOverMenu = document.getElementById("gameOverMenu");
   const scoreCount = document.getElementById("score");
   const ctx = canvas.getContext("2d");
@@ -450,7 +453,8 @@ window.addEventListener("load", function () {
     animationId = requestAnimationFrame(animate);
   }
 
-  againButton.addEventListener("click", () => {
+  const gainFunction = (name) => {
+    avatar = name;
     gameSpeed = 8;
     enemies = [];
     gameOver = false;
@@ -466,7 +470,8 @@ window.addEventListener("load", function () {
     scoreCounter = 0;
     gameOverMenu.classList.remove("show");
     animate(0);
-  });
+  };
+
   function setAvatar(name) {
     avatar = name;
     input = new InputHandler();
@@ -499,5 +504,15 @@ window.addEventListener("load", function () {
 
   document.getElementById("wizard-btn").addEventListener("click", () => {
     setAvatar("wizard");
+  });
+
+  againMc.addEventListener("click", () => {
+    gainFunction("mc");
+  });
+  againSkater.addEventListener("click", () => {
+    gainFunction("skater");
+  });
+  againWizard.addEventListener("click", () => {
+    gainFunction("wizard");
   });
 });
