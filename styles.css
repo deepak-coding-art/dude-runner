@@ -108,3 +108,7 @@ h2 {
 .avatar {
   margin: 0.5rem;
 }
+
+.audio {
+  display: none;
+}

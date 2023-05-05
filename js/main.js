@@ -1,12 +1,15 @@
 window.addEventListener("load", function () {
   // Get the device pixel ratio
-  const debug = false;
+  const debug = true;
   const dpr = window.devicePixelRatio || 1;
   const canvas = document.getElementById("canvas0");
   const mainMenu = document.getElementById("mainMenu");
   const againMc = document.getElementById("again-mc-btn");
   const againSkater = document.getElementById("again-skater-btn");
   const againWizard = document.getElementById("again-wizard-btn");
+  const startAudio = document.getElementById("start-audio");
+  const middleAudio = document.getElementById("middle-audio");
+  const endAudio = document.getElementById("end-audio");
 
   const gameOverMenu = document.getElementById("gameOverMenu");
   const scoreCount = document.getElementById("score");
@@ -344,7 +347,7 @@ window.addEventListener("load", function () {
         if (gameSpeed > 25) gameSpeed = 25;
       }
       this.collisionBox = {
-        x: this.x + 55 * this.size,
+        x: this.x + 68 * this.size,
         y: this.y + 90 * this.size,
         width: this.width - 130 / this.size,
         height: this.height - 100 / this.size,
@@ -436,6 +439,12 @@ window.addEventListener("load", function () {
       }
       cancelAnimationFrame(animationId);
       gameOverMenu.classList.add("show");
+      startAudio.pause();
+      startAudio.currentTime = 0;
+      middleAudio.pause();
+      middleAudio.currentTime = 0;
+      endAudio.play();
+
       return;
     }
     const deltaTime = timeStamp - lastTime;
@@ -453,7 +462,10 @@ window.addEventListener("load", function () {
     animationId = requestAnimationFrame(animate);
   }
 
-  const gainFunction = (name) => {
+  const againFunction = (name) => {
+    endAudio.pause();
+    endAudio.currentTime = 0;
+    startAudio.play();
     avatar = name;
     gameSpeed = 8;
     enemies = [];
@@ -473,6 +485,9 @@ window.addEventListener("load", function () {
   };
 
   function setAvatar(name) {
+    endAudio.pause();
+    endAudio.currentTime = 0;
+    startAudio.play();
     avatar = name;
     input = new InputHandler();
     player = new Player(canvas.width, canvas.height);
@@ -507,12 +522,21 @@ window.addEventListener("load", function () {
   });
 
   againMc.addEventListener("click", () => {
-    gainFunction("mc");
+    againFunction("mc");
   });
   againSkater.addEventListener("click", () => {
-    gainFunction("skater");
+    againFunction("skater");
   });
   againWizard.addEventListener("click", () => {
-    gainFunction("wizard");
+    againFunction("wizard");
+  });
+
+  // Audio events
+  startAudio.addEventListener("ended", () => {
+    middleAudio.play();
+  });
+  middleAudio.addEventListener("ended", function () {
+    middleAudio.currentTime = 0;
+    middleAudio.play();
   });
 });
