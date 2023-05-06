@@ -16,7 +16,7 @@ window.addEventListener("load", function () {
   const ctx = canvas.getContext("2d");
   canvas.width = canvas.clientWidth * dpr;
   canvas.height = canvas.clientHeight * dpr;
-  let gameSpeed = 12;
+  let gameSpeed = 14;
   let highScore = localStorage.getItem("highScore") || 0;
   let avatar = "mc";
   let gameOver = false;
