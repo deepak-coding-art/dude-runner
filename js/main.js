@@ -467,7 +467,7 @@ window.addEventListener("load", function () {
     endAudio.currentTime = 0;
     startAudio.play();
     avatar = name;
-    gameSpeed = 8;
+    gameSpeed = 14;
     enemies = [];
     gameOver = false;
     score = 0;
