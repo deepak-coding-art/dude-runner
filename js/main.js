@@ -2,7 +2,7 @@ window.addEventListener("load", function () {
   // Get the device pixel ratio
   const dpr = window.devicePixelRatio || 1;
   const canvas = document.getElementById("canvas0");
-  const mainMenu = document.getElementById("mainMenu");
+  const playMenu = document.getElementById("playMenu");
   // Buttons
   const mcButton = document.getElementById("mc-btn");
   const skaterButton = document.getElementById("skater-btn");
@@ -10,6 +10,7 @@ window.addEventListener("load", function () {
   const againMc = document.getElementById("again-mc-btn");
   const againSkater = document.getElementById("again-skater-btn");
   const againWizard = document.getElementById("again-wizard-btn");
+  const playBtn = document.getElementById("playBtn");
   // Audios
   const startAudio = document.getElementById("start-audio");
   const middleAudio = document.getElementById("middle-audio");
@@ -18,6 +19,7 @@ window.addEventListener("load", function () {
   const gameOverMenu = document.getElementById("gameOverMenu");
   const scoreCount = document.getElementById("score");
   const coinElement = document.getElementById("coinElement");
+  const mainMenu = document.getElementById("mainMenu");
   // Canvas setup
   const ctx = canvas.getContext("2d");
   canvas.width = canvas.clientWidth * dpr;
@@ -46,7 +48,7 @@ window.addEventListener("load", function () {
   let coinCount;
 
   // Debug
-  const debug = true;
+  const debug = false;
   const debugGameOver = false;
   const debugRun = false;
   const debugSpeed = null;
@@ -156,7 +158,7 @@ window.addEventListener("load", function () {
       gameOverMenu.classList.remove("show");
     } else {
       // Firs start code
-      mainMenu.classList.remove("show");
+      playMenu.classList.remove("show");
     }
 
     animate(0);
@@ -727,6 +729,36 @@ window.addEventListener("load", function () {
     animationId = requestAnimationFrame(animate);
   }
 
+  // Database Api calls
+  async function getAllScores() {
+    try {
+      const endPoint = "https://owlies-core.herokuapp.com/api/game/allPlayers";
+      const response = await fetch(endPoint);
+      const data = await response.json();
+      console.log(data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async function saveScore(data = {}) {
+    try {
+      const endPoint =
+        "https://owlies-core.herokuapp.com/api/game/addNewPlayer";
+      const response = await fetch(endPoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const responseData = await response.json();
+      console.log(responseData);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   // Controls
   mcButton.addEventListener("click", () => {
     setAvatar("mc");
@@ -752,6 +784,11 @@ window.addEventListener("load", function () {
     againFunction("wizard");
   });
 
+  playBtn.addEventListener("click", () => {
+    mainMenu.classList.remove("show");
+    playMenu.classList.add("show");
+  });
+
   // Audio events
   startAudio.addEventListener("ended", () => {
     middleAudio.play();
@@ -765,4 +802,17 @@ window.addEventListener("load", function () {
   if (debugRun) {
     initGame("mc");
   }
+
+  // getAllScores();
+  // saveScore({
+  //   // "id": 7,
+  //   name: "system01",
+  //   high_score: 200,
+  //   daily_score: 10,
+  //   weekly_score: 15,
+  //   monthly_score: 45,
+  //   total_score: 200,
+  //   daily_reset_time: Date.now(),
+  //   score: 50,
+  // });
 });
