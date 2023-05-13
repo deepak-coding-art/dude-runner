@@ -55,7 +55,6 @@ body {
 
 #canvas0 {
   background-color: transparent;
-  border: solid 5px var(--border-white);
   width: 1280px;
   aspect-ratio: 1.72;
   max-width: 100%;
@@ -120,6 +119,10 @@ h2 {
 
 .show {
   display: flex;
+}
+
+.hide {
+  display: none;
 }
 
 .avatars {
@@ -206,4 +209,21 @@ h2 {
 .block {
   padding: 0.2rem;
   margin: 0.5rem;
+}
+
+.backBtn-leader {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0 0.2rem;
+}
+
+.backBtn-leader svg {
+  fill: #fff;
+  stroke: #fff;
 }

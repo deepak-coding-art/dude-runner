@@ -11,6 +11,10 @@ window.addEventListener("load", function () {
   const againSkater = document.getElementById("again-skater-btn");
   const againWizard = document.getElementById("again-wizard-btn");
   const playBtn = document.getElementById("playBtn");
+  const backToMainMenu = document.getElementById("quit-to-main-menu");
+  const menuToMain = document.getElementById("menu-to-mainMenu");
+  const goLeaderBoard = document.getElementById("go-to-leader");
+  const leaderToMain = document.getElementById("leader-board-to-main");
   // Audios
   const startAudio = document.getElementById("start-audio");
   const middleAudio = document.getElementById("middle-audio");
@@ -20,6 +24,7 @@ window.addEventListener("load", function () {
   const scoreCount = document.getElementById("score");
   const coinElement = document.getElementById("coinElement");
   const mainMenu = document.getElementById("mainMenu");
+  const leaderBoard = document.getElementById("leader-board");
   // Canvas setup
   const ctx = canvas.getContext("2d");
   canvas.width = canvas.clientWidth * dpr;
@@ -169,6 +174,7 @@ window.addEventListener("load", function () {
   };
 
   function setAvatar(name) {
+    canvas.style.border = "solid 5px var(--border-white);";
     initGame(name, false);
   }
 
@@ -658,7 +664,15 @@ window.addEventListener("load", function () {
 
     // Coins
     if (coinTimer > coinInterval + randomCoinInterval) {
-      coins.push(new Coin(canvas.width, canvas.height, 0.25, 0));
+      const randomHeight = randomNumberGen(0, 0.25);
+      coins.push(
+        new Coin(
+          canvas.width,
+          canvas.height - canvas.height * randomHeight,
+          0.25,
+          0
+        )
+      );
 
       coinTimer = 0;
       randomCoinInterval = getObstacleInterval(
@@ -787,6 +801,25 @@ window.addEventListener("load", function () {
   playBtn.addEventListener("click", () => {
     mainMenu.classList.remove("show");
     playMenu.classList.add("show");
+  });
+
+  goLeaderBoard.addEventListener("click", () => {
+    mainMenu.classList.remove("show");
+    leaderBoard.classList.add("show");
+  });
+
+  backToMainMenu.addEventListener("click", () => {
+    location.reload();
+  });
+
+  menuToMain.addEventListener("click", () => {
+    mainMenu.classList.add("show");
+    playMenu.classList.remove("show");
+  });
+
+  leaderToMain.addEventListener("click", () => {
+    mainMenu.classList.add("show");
+    leaderBoard.classList.remove("show");
   });
 
   // Audio events
