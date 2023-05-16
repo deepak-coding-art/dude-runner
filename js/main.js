@@ -31,6 +31,7 @@ window.addEventListener("load", function () {
   canvas.height = canvas.clientHeight * dpr;
   // Init variables
   let highScore = localStorage.getItem("highScore") || 0;
+  let coinScoreIncenseFactor = 50;
   let gameSpeed = 14;
   let avatar = "mc";
   let gameOver = false;
@@ -51,6 +52,10 @@ window.addEventListener("load", function () {
   let lastFrameTime;
   let scoreCounter;
   let coinCount;
+  let coinHit;
+  let scoreAnimating;
+  let dynamicFont;
+  let interval;
 
   // Debug
   const debug = false;
@@ -152,6 +157,10 @@ window.addEventListener("load", function () {
     coinTimer = 0;
     coinInterval = 100;
     randomCoinInterval = Math.random() * 1000 + 500;
+    coinHit = false;
+    scoreAnimating = false;
+    dynamicFont = "40px helvetica";
+    interval;
 
     gameSpeed = debugSpeed || 14;
     enemies = [];
@@ -316,8 +325,10 @@ window.addEventListener("load", function () {
         );
         if (collide) {
           collisionIndexes.push(index);
+          score += coinScoreIncenseFactor;
           coinCount++;
           coinElement.innerHTML = coinCount;
+          coinHit = true;
         }
       });
 
@@ -698,15 +709,32 @@ window.addEventListener("load", function () {
     context.fillStyle = "white";
     context.fillText("High Score: " + highScore, 22, 52);
     context.fillStyle = "black";
-    context.fillText("Score: " + score, 20, 90);
+    context.fillText("Score: ", 20, 100);
     context.fillStyle = "white";
-    context.fillText("Score: " + score, 22, 92);
+    context.fillText("Score: ", 22, 102);
+    if (coinHit) {
+      dynamicFont = "50px helvetica";
+      scoreAnimating = true;
+      coinHit = false;
+      setTimeout(() => {
+        dynamicFont = "40px helvetica";
+      }, 250);
+    } else if (!scoreAnimating) {
+      context.font = "40px helvetica";
+    } else {
+      console.log(dynamicFont);
+      context.font = dynamicFont;
+    }
+    context.fillStyle = "black";
+    context.fillText(score, 150, 100);
+    context.fillStyle = "white";
+    context.fillText(score, 150, 102);
 
     // Coins
-    context.fillStyle = "black";
-    context.fillText("Coins: " + coinCount, 20, 130);
-    context.fillStyle = "white";
-    context.fillText("Coins: " + coinCount, 22, 132);
+    // context.fillStyle = "black";
+    // context.fillText("Coins: " + coinCount, 20, 130);
+    // context.fillStyle = "white";
+    // context.fillText("Coins: " + coinCount, 22, 132);
   }
 
   // Main loop
@@ -833,6 +861,7 @@ window.addEventListener("load", function () {
   });
 
   if (debugRun) {
+    mainMenu.classList.remove("show");
     initGame("mc");
   }
 
