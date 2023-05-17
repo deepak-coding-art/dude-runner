@@ -189,7 +189,13 @@ h2 {
 }
 
 .loading {
-  color: var(--white);
+  color: white;
+  font-size: 2rem;
+  margin-top: 2rem;
+}
+
+.no-data {
+  color: rgb(160, 160, 160);
   font-size: 2rem;
   margin-top: 2rem;
 }

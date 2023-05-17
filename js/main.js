@@ -15,6 +15,11 @@ window.addEventListener("load", function () {
   const menuToMain = document.getElementById("menu-to-mainMenu");
   const goLeaderBoard = document.getElementById("go-to-leader");
   const leaderToMain = document.getElementById("leader-board-to-main");
+  const dailyScores = document.getElementById("daily-timeline");
+  const weeklyScores = document.getElementById("weekly-timeline");
+  const monthlyScores = document.getElementById("monthly-timeline");
+  // Options
+  const scoreSortSelections = [dailyScores, weeklyScores, monthlyScores];
   // Audios
   const startAudio = document.getElementById("start-audio");
   const middleAudio = document.getElementById("middle-audio");
@@ -25,6 +30,7 @@ window.addEventListener("load", function () {
   const coinElement = document.getElementById("coinElement");
   const mainMenu = document.getElementById("mainMenu");
   const leaderBoard = document.getElementById("leader-board");
+  const ranksElement = document.getElementById("ranks");
   // Canvas setup
   const ctx = canvas.getContext("2d");
   canvas.width = canvas.clientWidth * dpr;
@@ -56,6 +62,9 @@ window.addEventListener("load", function () {
   let scoreAnimating;
   let dynamicFont;
   let interval;
+  let scoreHolt;
+  let activeSelect = 0;
+  let loadingInterval;
 
   // Debug
   const debug = false;
@@ -64,6 +73,10 @@ window.addEventListener("load", function () {
   const debugSpeed = null;
 
   // Utils
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   function randomNumberGen(min, max) {
     // min and max included
     return Math.random() * (max - min) + min;
@@ -160,7 +173,8 @@ window.addEventListener("load", function () {
     coinHit = false;
     scoreAnimating = false;
     dynamicFont = "40px helvetica";
-    interval;
+    interval = null;
+    scoreHolt = null;
 
     gameSpeed = debugSpeed || 14;
     enemies = [];
@@ -185,6 +199,23 @@ window.addEventListener("load", function () {
   function setAvatar(name) {
     canvas.style.border = "solid 5px var(--border-white);";
     initGame(name, false);
+  }
+
+  async function fetchScores() {
+    clearInterval(loadingInterval);
+    ranksElement.innerHTML = `<div class="loading" id="ranksLoading">Loading.</div>`;
+    loadingInterval = setInterval(() => {
+      const element = document.getElementById("ranksLoading");
+      const loadingText = element.innerHTML;
+      if (loadingText.length < 10) {
+        element.innerHTML = loadingText + ".";
+      } else {
+        element.innerHTML = "Loading";
+      }
+    }, 500);
+    await sleep(1000);
+    clearInterval(loadingInterval);
+    ranksElement.innerHTML = `<div class="no-data" id="ranksLoading">No Data</div>`;
   }
 
   // Classes
@@ -716,19 +747,20 @@ window.addEventListener("load", function () {
       dynamicFont = "50px helvetica";
       scoreAnimating = true;
       coinHit = false;
+      scoreHolt = score;
       setTimeout(() => {
         dynamicFont = "40px helvetica";
-      }, 250);
+        scoreHolt = null;
+      }, 400);
     } else if (!scoreAnimating) {
       context.font = "40px helvetica";
     } else {
-      console.log(dynamicFont);
       context.font = dynamicFont;
     }
     context.fillStyle = "black";
-    context.fillText(score, 150, 100);
+    context.fillText(scoreHolt ? scoreHolt : score, 150, 100);
     context.fillStyle = "white";
-    context.fillText(score, 150, 102);
+    context.fillText(scoreHolt ? scoreHolt : score, 150, 102);
 
     // Coins
     // context.fillStyle = "black";
@@ -834,6 +866,7 @@ window.addEventListener("load", function () {
   goLeaderBoard.addEventListener("click", () => {
     mainMenu.classList.remove("show");
     leaderBoard.classList.add("show");
+    fetchScores();
   });
 
   backToMainMenu.addEventListener("click", () => {
@@ -848,6 +881,21 @@ window.addEventListener("load", function () {
   leaderToMain.addEventListener("click", () => {
     mainMenu.classList.add("show");
     leaderBoard.classList.remove("show");
+  });
+
+  scoreSortSelections.forEach((selection, selectionIndex) => {
+    selection.addEventListener("click", () => {
+      scoreSortSelections.forEach((selectionNode, selectionNodeIndex) => {
+        if (selectionIndex === selectionNodeIndex) {
+          selectionNode.classList.add("active");
+          if (activeSelect === selectionNodeIndex) return;
+          activeSelect = selectionNodeIndex;
+          fetchScores();
+          return;
+        }
+        selectionNode.classList.remove("active");
+      });
+    });
   });
 
   // Audio events
