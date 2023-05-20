@@ -18,6 +18,7 @@ window.addEventListener("load", function () {
   const dailyScores = document.getElementById("daily-timeline");
   const weeklyScores = document.getElementById("weekly-timeline");
   const monthlyScores = document.getElementById("monthly-timeline");
+  const muteButton = document.getElementById("muteButton");
   // Options
   const scoreSortSelections = [dailyScores, weeklyScores, monthlyScores];
   // Audios
@@ -31,6 +32,8 @@ window.addEventListener("load", function () {
   const mainMenu = document.getElementById("mainMenu");
   const leaderBoard = document.getElementById("leader-board");
   const ranksElement = document.getElementById("ranks");
+  const mutedIcon = document.getElementById("muteIcon");
+  const notMutedIcon = document.getElementById("notMuteIcon");
   // Canvas setup
   const ctx = canvas.getContext("2d");
   canvas.width = canvas.clientWidth * dpr;
@@ -65,6 +68,14 @@ window.addEventListener("load", function () {
   let scoreHolt;
   let activeSelect = 0;
   let loadingInterval;
+  let muted = localStorage.getItem("muted") || false;
+  if (muted === "true") {
+    muted = true;
+  } else if (muted === "false") {
+    muted = false;
+  }
+
+  updateMute();
 
   // Debug
   const debug = false;
@@ -146,18 +157,47 @@ window.addEventListener("load", function () {
     });
   }
 
+  function updateMute() {
+    if (muted) {
+      mutedIcon.classList.add("showIcon");
+      notMutedIcon.classList.remove("showIcon");
+    } else {
+      mutedIcon.classList.remove("showIcon");
+      notMutedIcon.classList.add("showIcon");
+    }
+    startAudio.pause();
+    startAudio.currentTime = 0;
+    middleAudio.pause();
+    middleAudio.currentTime = 0;
+    endAudio.pause();
+    endAudio.currentTime = 0;
+  }
+
   function initGame(name, restart = false) {
     // Shared Code
     endAudio.pause();
     endAudio.currentTime = 0;
-    if (!debug) {
-      startAudio.play();
-    }
+    muteButton.classList.add("hide");
+
     avatar = name;
     input = new InputHandler();
     player = new Player(canvas.width, canvas.height);
     background = new Background(canvas.width, canvas.height);
+    muted = localStorage.getItem("muted") || false;
+    console.log(muted);
+    if (muted === "true") {
+      muted = true;
+    } else if (muted === "false") {
+      muted = false;
+    }
 
+    updateMute();
+
+    if (!debug && !muted) {
+      startAudio.play();
+    }
+
+    console.log(muted);
     score = 0;
     coinCount = 0;
 
@@ -778,11 +818,12 @@ window.addEventListener("load", function () {
       }
       cancelAnimationFrame(animationId);
       gameOverMenu.classList.add("show");
+      muteButton.classList.remove("hide");
       startAudio.pause();
       startAudio.currentTime = 0;
       middleAudio.pause();
       middleAudio.currentTime = 0;
-      if (!debug) {
+      if (!debug && !muted) {
         endAudio.play();
       }
 
@@ -881,6 +922,11 @@ window.addEventListener("load", function () {
   leaderToMain.addEventListener("click", () => {
     mainMenu.classList.add("show");
     leaderBoard.classList.remove("show");
+  });
+  muteButton.addEventListener("click", () => {
+    muted = !muted;
+    localStorage.setItem("muted", muted);
+    updateMute();
   });
 
   scoreSortSelections.forEach((selection, selectionIndex) => {
