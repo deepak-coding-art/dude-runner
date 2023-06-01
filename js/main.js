@@ -25,6 +25,13 @@ window.addEventListener("load", function () {
   const startAudio = document.getElementById("start-audio");
   const middleAudio = document.getElementById("middle-audio");
   const endAudio = document.getElementById("end-audio");
+  const introVideo = document.getElementById("introVid");
+  const coinCollectAudio = document.getElementById("coin-collect-audio");
+  const hitBonkAudio = document.getElementById("hit-bonk-audio");
+  const jumpAAudio = document.getElementById("jump-a-audio");
+  const jumpCAudio = document.getElementById("jump-c-audio");
+  const pointBoostAudio = document.getElementById("point-boost-audio");
+
   // Screens
   const gameOverMenu = document.getElementById("gameOverMenu");
   const scoreCount = document.getElementById("score");
@@ -372,6 +379,9 @@ window.addEventListener("load", function () {
           this.collisionBox.x > enemy.collisionBox.x - 10 &&
           !this.onGround()
         ) {
+          if (!debug && !muted) {
+            hitBonkAudio.play();
+          }
           enemy.maxFrame = 20;
         }
 
@@ -400,6 +410,15 @@ window.addEventListener("load", function () {
           coinCount++;
           coinElement.innerHTML = coinCount;
           coinHit = true;
+          if (!debug && !muted) {
+            coinCollectAudio.pause();
+            coinCollectAudio.currentTime = 0;
+            coinCollectAudio.play();
+
+            pointBoostAudio.pause();
+            pointBoostAudio.currentTime = 0;
+            pointBoostAudio.play();
+          }
         }
       });
 
@@ -419,6 +438,13 @@ window.addEventListener("load", function () {
       // Controls
       if (input.keys.indexOf(" ") > -1 && this.onGround()) {
         this.vy -= this.maxJumpSpeed;
+        if (!debug && !muted) {
+          if (avatar === "skater") {
+            jumpCAudio.play();
+          } else {
+            jumpAAudio.play();
+          }
+        }
         this.frameX = 0;
       } else {
         this.speed = 0;
@@ -448,6 +474,14 @@ window.addEventListener("load", function () {
         width: this.width - this.width * 0.85,
         height: this.height - this.height * 0.25,
       };
+
+      if (score % 100 === 0 && score !== 0) {
+        if (!debug && !muted) {
+          pointBoostAudio.play();
+        }
+
+        console.log(score);
+      }
     }
 
     onGround() {
@@ -902,6 +936,7 @@ window.addEventListener("load", function () {
   playBtn.addEventListener("click", () => {
     mainMenu.classList.remove("show");
     playMenu.classList.add("show");
+    introVideo.classList.add("hide");
   });
 
   goLeaderBoard.addEventListener("click", () => {
@@ -917,6 +952,7 @@ window.addEventListener("load", function () {
   menuToMain.addEventListener("click", () => {
     mainMenu.classList.add("show");
     playMenu.classList.remove("show");
+    introVideo.classList.remove("hide");
   });
 
   leaderToMain.addEventListener("click", () => {
@@ -954,6 +990,10 @@ window.addEventListener("load", function () {
     middleAudio.play();
   });
 
+  introVideo.addEventListener("ended", () => {
+    mainMenu.classList.add("show");
+  });
+
   if (debugRun) {
     mainMenu.classList.remove("show");
     initGame("mc");
@@ -961,14 +1001,13 @@ window.addEventListener("load", function () {
 
   // getAllScores();
   // saveScore({
-  //   // "id": 7,
   //   name: "system01",
-  //   high_score: 200,
-  //   daily_score: 10,
-  //   weekly_score: 15,
-  //   monthly_score: 45,
-  //   total_score: 200,
-  //   daily_reset_time: Date.now(),
-  //   score: 50,
+  //   high_score: 455,
+  //   score: 14,
+  //   daily_score: 14,
+  //   weekly_score: 100,
+  //   monthly_score: 455,
+  //   total_score: 455,
+  //   daily_reset_time: "12",
   // });
 });

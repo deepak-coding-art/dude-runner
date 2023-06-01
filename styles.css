@@ -53,12 +53,19 @@ body {
   font-family: "helvetica";
 }
 
-#canvas0 {
-  background-color: transparent;
+.canvasCont {
   width: 1280px;
   aspect-ratio: 1.72;
   max-width: 100%;
   max-height: 100%;
+  position: relative;
+}
+
+#canvas0 {
+  background-color: transparent;
+  width: 100%;
+  height: 100%;
+  position: absolute;
 }
 
 img {
@@ -79,6 +86,15 @@ img {
   justify-content: center;
 }
 
+.introVid {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
 .main-menu {
   display: flex;
   align-items: center;
@@ -90,11 +106,10 @@ img {
 
 button {
   background-color: transparent;
-  color: var(--white);
-  border: solid 2px var(--white);
-  border-radius: 10px;
-  padding: 0.2rem 1rem;
-  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
   cursor: pointer;
   width: 200px;
 }
@@ -118,6 +133,7 @@ h2 {
 }
 
 .avatars {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,18 +248,17 @@ h2 {
   border-radius: 50%;
   position: absolute;
   right: 10px;
-  top: 10px;
+  top: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   margin: 0;
+  z-index: 10;
 }
 
-.muteButton svg {
-  width: 80%;
-  height: 100%;
-  fill: white;
+.muteButton img {
+  width: 100%;
 }
 
 .muteSvg {
@@ -260,4 +275,64 @@ h2 {
 
 .hide {
   display: none;
+}
+
+/* buttons */
+.btnImage {
+  display: block;
+  width: 100%;
+}
+
+.start-menu {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+}
+
+.play-menu {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.playBtn {
+  width: 18%;
+  position: absolute;
+  left: 41%;
+  top: 65.7%;
+}
+
+.menuBtn {
+  width: 22%;
+  position: absolute;
+  left: 39%;
+  top: 77.5%;
+}
+
+.menu-buttons {
+  width: 18%;
+  position: static;
+}
+
+.menu-image {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.otherButtons {
+  border: solid 2px var(--white);
+  border-radius: 5px;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  color: white;
 }
