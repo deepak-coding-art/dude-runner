@@ -372,7 +372,6 @@ window.addEventListener("load", function () {
         }
         return true;
       });
-      console.log(newFreshResults);
       const rank = document.createElement("div");
       rank.classList.add("rank");
 
@@ -441,7 +440,6 @@ window.addEventListener("load", function () {
         total_score,
         daily_reset_time: "0:00 UTC",
       });
-      console.log(response);
     }
   }
 
@@ -659,8 +657,6 @@ window.addEventListener("load", function () {
         if (!debug && !muted) {
           pointBoostAudio.play();
         }
-
-        console.log(score);
       }
     }
 
@@ -1234,21 +1230,50 @@ window.addEventListener("load", function () {
       weekly_score: score,
       monthly_score: score,
       total_score: highScore,
-      daily_reset_time: "12",
+      daily_reset_time: "0:00 UTC",
     });
 
     if (response.error) {
       errorMessage.innerHTML = response.message;
       return;
     }
-
     saveUsername(username);
 
-    console.log(response);
+    let { isToday, isThisWeek, isThisMonth, total_score } = checkUpdates();
+    let daily_score, weekly_score, monthly_score;
+    if (isToday) {
+      daily_score += score;
+    } else {
+      daily_score = score;
+    }
+
+    if (isThisWeek) {
+      weekly_score += score;
+    } else {
+      weekly_score = score;
+    }
+
+    if (isThisMonth) {
+      monthly_score += score;
+    } else {
+      monthly_score = score;
+    }
+
+    total_score += score;
+    const newResponse = await updateScore({
+      name: username,
+      high_score: highScore,
+      score,
+      daily_score,
+      weekly_score,
+      monthly_score,
+      total_score,
+      daily_reset_time: "0:00 UTC",
+    });
+
     gameOverMenu.classList.add("show");
     muteButton.classList.remove("hide");
     getUsernameCont.classList.add("hide");
-    console.log(username);
   });
 
   scoreSortSelections.forEach((selection, selectionIndex) => {
