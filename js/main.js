@@ -191,8 +191,16 @@ window.addEventListener("load", function () {
     const isToday = isBeforeOrAfterToday(updated_at);
     const isThisWeek = isBeforeOrInCurrentWeek(updated_at);
     const isThisMonth = isBeforeOrInCurrentMonth(updated_at);
-    const { total_score } = userData;
-    return { isToday, isThisWeek, isThisMonth, total_score };
+    const { total_score, daily_score, weekly_score, monthly_score } = userData;
+    return {
+      isToday,
+      isThisWeek,
+      isThisMonth,
+      total_score,
+      daily_score,
+      weekly_score,
+      monthly_score,
+    };
   }
 
   function checkUpdatesUserData(userData) {
@@ -406,8 +414,25 @@ window.addEventListener("load", function () {
     if (!username) {
       getUsernameCont.classList.remove("hide");
     } else {
-      let { isToday, isThisWeek, isThisMonth, total_score } = checkUpdates();
-      let daily_score, weekly_score, monthly_score;
+      let {
+        isToday,
+        isThisWeek,
+        isThisMonth,
+        total_score,
+        daily_score,
+        weekly_score,
+        monthly_score,
+      } = await checkUpdates();
+
+      console.log({
+        isToday,
+        isThisWeek,
+        isThisMonth,
+        total_score,
+        daily_score,
+        weekly_score,
+        monthly_score,
+      });
       if (isToday) {
         daily_score += score;
       } else {
