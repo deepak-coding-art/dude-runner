@@ -47,6 +47,8 @@ window.addEventListener("load", function () {
   const ctx = canvas.getContext("2d");
   canvas.width = canvas.clientWidth * dpr;
   canvas.height = canvas.clientHeight * dpr;
+  const apiBaseEndpoint = "https://owlies-core.herokuapp.com/api";
+  const numberOfRanksShown = 10;
   // Init variables
   let highScore = localStorage.getItem("highScore") || 0;
   let coinScoreIncenseFactor = 50;
@@ -85,7 +87,6 @@ window.addEventListener("load", function () {
   }
 
   updateMute();
-
   // Debug
   const debug = false;
   const debugGameOver = false;
@@ -180,6 +181,62 @@ window.addEventListener("load", function () {
     middleAudio.currentTime = 0;
     endAudio.pause();
     endAudio.currentTime = 0;
+  }
+
+  // dates
+  async function checkUpdates() {
+    const { data } = await getSingleUser(getUsername());
+    const userData = data[0];
+    const updated_at = new Date(userData.updated_at);
+    const isToday = isBeforeOrAfterToday(updated_at);
+    const isThisWeek = isBeforeOrInCurrentWeek(updated_at);
+    const isThisMonth = isBeforeOrInCurrentMonth(updated_at);
+    const { total_score } = userData;
+    return { isToday, isThisWeek, isThisMonth, total_score };
+  }
+
+  function checkUpdatesUserData(userData) {
+    const updated_at = new Date(userData.updated_at);
+    const isToday = isBeforeOrAfterToday(updated_at);
+    const isThisWeek = isBeforeOrInCurrentWeek(updated_at);
+    const isThisMonth = isBeforeOrInCurrentMonth(updated_at);
+    const { total_score } = userData;
+    return { isToday, isThisWeek, isThisMonth, total_score };
+  }
+
+  function isBeforeOrAfterToday(date) {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0); // Set today's time to 0:00 AM GMT
+    return date < today ? false : true;
+  }
+
+  function isBeforeOrInCurrentWeek(date) {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setUTCHours(0, 0, 0, 0); // Set start of the week to 0:00 AM GMT on Sunday
+    startOfWeek.setDate(today.getDate() - today.getUTCDay()); // Set to the previous Sunday
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7); // Set to the next Sunday
+
+    return date < startOfWeek
+      ? false
+      : date >= startOfWeek && date < endOfWeek
+      ? true
+      : true;
+  }
+
+  function isBeforeOrInCurrentMonth(date) {
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    endOfMonth.setUTCHours(23, 59, 59, 999); // Set end of the month to 23:59:59.999 PM GMT
+
+    return date < startOfMonth
+      ? false
+      : date >= startOfMonth && date <= endOfMonth
+      ? true
+      : true;
   }
 
   function initGame(name, restart = false) {
@@ -279,7 +336,6 @@ window.addEventListener("load", function () {
     if (results.error) {
       ranksElement.innerHTML = `<div class="no-data" id="ranksLoading">No Data</div>`;
     } else {
-      console.log(activeSelect);
       let activeScoreField;
       if (activeSelect === 0) {
         activeScoreField = "daily_score";
@@ -288,12 +344,35 @@ window.addEventListener("load", function () {
       } else if (activeSelect === 2) {
         activeScoreField = "monthly_score";
       }
-      console.log(activeScoreField);
       ranksElement.innerHTML = "";
       const newResults = results.data;
       const username = localStorage.getItem("username") || undefined;
       // Sort newResults by high_score
       newResults.sort((a, b) => b[activeScoreField] - a[activeScoreField]);
+      const newFreshResults = [];
+      newResults.every((result) => {
+        if (newFreshResults.length >= numberOfRanksShown) {
+          return false;
+        }
+        if (activeScoreField === "daily_score") {
+          const { isToday } = checkUpdatesUserData(result);
+          if (isToday) {
+            newFreshResults.push(result);
+          }
+        } else if (activeScoreField === "weekly_score") {
+          const { isThisWeek } = checkUpdatesUserData(result);
+          if (isThisWeek) {
+            newFreshResults.push(result);
+          }
+        } else if (activeScoreField === "monthly_score") {
+          const { isThisMonth } = checkUpdatesUserData(result);
+          if (isThisMonth) {
+            newFreshResults.push(result);
+          }
+        }
+        return true;
+      });
+      console.log(newFreshResults);
       const rank = document.createElement("div");
       rank.classList.add("rank");
 
@@ -304,7 +383,7 @@ window.addEventListener("load", function () {
   `;
       ranksElement.appendChild(rank);
 
-      newResults.forEach((result, index) => {
+      newFreshResults.forEach((result, index) => {
         `<div class="rank">
             <h3 class="block">Rank</h3>
             <h4 class="block">Name</h4>
@@ -319,30 +398,50 @@ window.addEventListener("load", function () {
             </h4>
             <h4 class="block">${result[activeScoreField] || 0}</h4>`;
         ranksElement.appendChild(rank);
-
-        console.log(result);
       });
     }
   }
 
-  function initSaveScore() {
+  async function initSaveScore() {
     username = getUsername();
     if (!username) {
       getUsernameCont.classList.remove("hide");
     } else {
-      console.log("score:", score);
+      let { isToday, isThisWeek, isThisMonth, total_score } = checkUpdates();
+      let daily_score, weekly_score, monthly_score;
+      if (isToday) {
+        daily_score += score;
+      } else {
+        daily_score = score;
+      }
+
+      if (isThisWeek) {
+        weekly_score += score;
+      } else {
+        weekly_score = score;
+      }
+
+      if (isThisMonth) {
+        monthly_score += score;
+      } else {
+        monthly_score = score;
+      }
+
+      total_score += score;
+
       gameOverMenu.classList.add("show");
       muteButton.classList.remove("hide");
-      saveScore({
+      const response = await updateScore({
         name: username,
         high_score: highScore,
         score,
-        daily_score: score,
-        weekly_score: score,
-        monthly_score: score,
-        total_score: highScore,
-        daily_reset_time: "12",
+        daily_score,
+        weekly_score,
+        monthly_score,
+        total_score,
+        daily_reset_time: "0:00 UTC",
       });
+      console.log(response);
     }
   }
 
@@ -1003,20 +1102,47 @@ window.addEventListener("load", function () {
   //   });
 
   async function saveScore(data = {}) {
-    // saveScore({
-    //   name: "123456",
-    //   high_score: 455,
-    //   score: 14,
-    //   daily_score: 14,
-    //   weekly_score: 100,
-    //   monthly_score: 455,
-    //   total_score: 455,
-    //   daily_reset_time: "12",
-    // });
-    console.log(JSON.stringify(data));
     try {
-      const endPoint =
-        " https://owlies-core.herokuapp.com/api/game/addNewPlayer";
+      const endPoint = apiBaseEndpoint + "/game/addNewPlayer";
+      const response = await fetch(endPoint, {
+        method: "POST",
+        maxBodyLength: Infinity,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const responseData = await response.json();
+      return responseData;
+    } catch (error) {
+      console.error(error);
+      return { error };
+    }
+  }
+
+  async function updateScore(data = {}) {
+    try {
+      const endPoint = apiBaseEndpoint + "/game/updatePlayer";
+      const response = await fetch(endPoint, {
+        method: "POST",
+        maxBodyLength: Infinity,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const responseData = await response.json();
+      return responseData;
+    } catch (error) {
+      console.error(error);
+      return { error };
+    }
+  }
+
+  async function getSingleUser(username) {
+    try {
+      const data = { name: username };
+      const endPoint = apiBaseEndpoint + "/game/singlePlayer";
       const response = await fetch(endPoint, {
         method: "POST",
         maxBodyLength: Infinity,
