@@ -31,7 +31,8 @@ window.addEventListener("load", function () {
   const jumpAAudio = document.getElementById("jump-a-audio");
   const jumpCAudio = document.getElementById("jump-c-audio");
   const pointBoostAudio = document.getElementById("point-boost-audio");
-
+  // Forms
+  const usernameForm = document.getElementById("getUsername");
   // Screens
   const gameOverMenu = document.getElementById("gameOverMenu");
   const scoreCount = document.getElementById("score");
@@ -41,6 +42,7 @@ window.addEventListener("load", function () {
   const ranksElement = document.getElementById("ranks");
   const mutedIcon = document.getElementById("muteIcon");
   const notMutedIcon = document.getElementById("notMuteIcon");
+  const getUsernameCont = document.getElementById("getUsernameCont");
   // Canvas setup
   const ctx = canvas.getContext("2d");
   canvas.width = canvas.clientWidth * dpr;
@@ -191,7 +193,6 @@ window.addEventListener("load", function () {
     player = new Player(canvas.width, canvas.height);
     background = new Background(canvas.width, canvas.height);
     muted = localStorage.getItem("muted") || false;
-    console.log(muted);
     if (muted === "true") {
       muted = true;
     } else if (muted === "false") {
@@ -204,7 +205,6 @@ window.addEventListener("load", function () {
       startAudio.play();
     }
 
-    console.log(muted);
     score = 0;
     coinCount = 0;
 
@@ -243,6 +243,19 @@ window.addEventListener("load", function () {
     initGame(name, true);
   };
 
+  function getUsername() {
+    const username = localStorage.getItem("username");
+    if (username) {
+      return username;
+    } else {
+      return null;
+    }
+  }
+
+  function saveUsername(username) {
+    localStorage.setItem("username", username);
+  }
+
   function setAvatar(name) {
     canvas.style.border = "solid 5px var(--border-white);";
     initGame(name, false);
@@ -260,9 +273,77 @@ window.addEventListener("load", function () {
         element.innerHTML = "Loading";
       }
     }, 500);
-    await sleep(1000);
+    const results = await getAllScores();
+    // console.log(results);
     clearInterval(loadingInterval);
-    ranksElement.innerHTML = `<div class="no-data" id="ranksLoading">No Data</div>`;
+    if (results.error) {
+      ranksElement.innerHTML = `<div class="no-data" id="ranksLoading">No Data</div>`;
+    } else {
+      console.log(activeSelect);
+      let activeScoreField;
+      if (activeSelect === 0) {
+        activeScoreField = "daily_score";
+      } else if (activeSelect === 1) {
+        activeScoreField = "weekly_score";
+      } else if (activeSelect === 2) {
+        activeScoreField = "monthly_score";
+      }
+      console.log(activeScoreField);
+      ranksElement.innerHTML = "";
+      const newResults = results.data;
+      const username = localStorage.getItem("username") || undefined;
+      // Sort newResults by high_score
+      newResults.sort((a, b) => b[activeScoreField] - a[activeScoreField]);
+      const rank = document.createElement("div");
+      rank.classList.add("rank");
+
+      rank.innerHTML = `
+      <h3 class="block">Rank</h3>
+      <h4 class="block">Name</h4>
+      <h4 class="block">Score</h4>
+  `;
+      ranksElement.appendChild(rank);
+
+      newResults.forEach((result, index) => {
+        `<div class="rank">
+            <h3 class="block">Rank</h3>
+            <h4 class="block">Name</h4>
+            <h4 class="block">Score</h4>
+          </div>`;
+        const rank = document.createElement("div");
+        rank.classList.add("rank");
+        rank.innerHTML = `<h3 class="block">${index + 1}</h3>
+          <h4 class="block">${result.name} ${
+          result.name === username ? "(You)" : ""
+        }
+            </h4>
+            <h4 class="block">${result[activeScoreField] || 0}</h4>`;
+        ranksElement.appendChild(rank);
+
+        console.log(result);
+      });
+    }
+  }
+
+  function initSaveScore() {
+    username = getUsername();
+    if (!username) {
+      getUsernameCont.classList.remove("hide");
+    } else {
+      console.log("score:", score);
+      gameOverMenu.classList.add("show");
+      muteButton.classList.remove("hide");
+      saveScore({
+        name: username,
+        high_score: highScore,
+        score,
+        daily_score: score,
+        weekly_score: score,
+        monthly_score: score,
+        total_score: highScore,
+        daily_reset_time: "12",
+      });
+    }
   }
 
   // Classes
@@ -851,12 +932,12 @@ window.addEventListener("load", function () {
         localStorage.setItem("highScore", highScore);
       }
       cancelAnimationFrame(animationId);
-      gameOverMenu.classList.add("show");
-      muteButton.classList.remove("hide");
+
       startAudio.pause();
       startAudio.currentTime = 0;
       middleAudio.pause();
       middleAudio.currentTime = 0;
+      initSaveScore();
       if (!debug && !muted) {
         endAudio.play();
       }
@@ -884,27 +965,71 @@ window.addEventListener("load", function () {
       const endPoint = "https://owlies-core.herokuapp.com/api/game/allPlayers";
       const response = await fetch(endPoint);
       const data = await response.json();
-      console.log(data);
+      return data;
     } catch (err) {
       console.log(err);
+      return { error: err };
     }
   }
 
+  // let data = qs.stringify({
+  //   name: "lakmal344",
+  //   high_score: "",
+  //   score: "",
+  //   daily_score: "",
+  //   weekly_score: "",
+  //   monthly_score: "",
+  //   total_score: "",
+  //   daily_reset_time: "",
+  // });
+
+  // let config = {
+  //   method: "post",
+  //   maxBodyLength: Infinity,
+  //   url: "http://localhost:3000/api/game/addNewPlayer",
+  //   headers: {
+  //     "Content-Type": "application/x-www-form-urlencoded",
+  //   },
+  //   data: data,
+  // };
+
+  // axios
+  //   .request(config)
+  //   .then((response) => {
+  //     console.log(JSON.stringify(response.data));
+  //   })
+  //   .catch((error) => {
+  //     console.log(error);
+  //   });
+
   async function saveScore(data = {}) {
+    // saveScore({
+    //   name: "123456",
+    //   high_score: 455,
+    //   score: 14,
+    //   daily_score: 14,
+    //   weekly_score: 100,
+    //   monthly_score: 455,
+    //   total_score: 455,
+    //   daily_reset_time: "12",
+    // });
+    console.log(JSON.stringify(data));
     try {
       const endPoint =
-        "https://owlies-core.herokuapp.com/api/game/addNewPlayer";
+        " https://owlies-core.herokuapp.com/api/game/addNewPlayer";
       const response = await fetch(endPoint, {
         method: "POST",
+        maxBodyLength: Infinity,
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
       const responseData = await response.json();
-      console.log(responseData);
+      return responseData;
     } catch (error) {
       console.error(error);
+      return { error };
     }
   }
 
@@ -965,6 +1090,41 @@ window.addEventListener("load", function () {
     updateMute();
   });
 
+  usernameForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const errorMessage = document.getElementById("errorMessage");
+    errorMessage.innerHTML = "";
+    const usernameField = document.getElementById("usernameField");
+    const username = usernameField.value;
+    if (username.length < 3) {
+      errorMessage.innerHTML = "Username must be at least 3 characters long";
+      return;
+    }
+    const response = await saveScore({
+      name: username,
+      high_score: highScore,
+      score,
+      daily_score: score,
+      weekly_score: score,
+      monthly_score: score,
+      total_score: highScore,
+      daily_reset_time: "12",
+    });
+
+    if (response.error) {
+      errorMessage.innerHTML = response.message;
+      return;
+    }
+
+    saveUsername(username);
+
+    console.log(response);
+    gameOverMenu.classList.add("show");
+    muteButton.classList.remove("hide");
+    getUsernameCont.classList.add("hide");
+    console.log(username);
+  });
+
   scoreSortSelections.forEach((selection, selectionIndex) => {
     selection.addEventListener("click", () => {
       scoreSortSelections.forEach((selectionNode, selectionNodeIndex) => {
@@ -1000,14 +1160,4 @@ window.addEventListener("load", function () {
   }
 
   // getAllScores();
-  // saveScore({
-  //   name: "system01",
-  //   high_score: 455,
-  //   score: 14,
-  //   daily_score: 14,
-  //   weekly_score: 100,
-  //   monthly_score: 455,
-  //   total_score: 455,
-  //   daily_reset_time: "12",
-  // });
 });

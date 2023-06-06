@@ -79,6 +79,7 @@
         src="./assets/video/intro.mp4"
         autoplay
         muted
+        playsinline
       ></video>
       <div id="mainMenu" class="start-menu menu-cont">
         <button id="playBtn" class="playBtn">
@@ -135,6 +136,20 @@
             />
           </button>
         </div>
+      </div>
+      <div id="getUsernameCont" class="get-username-screen hide">
+        <form id="getUsername" class="username-form">
+          <p class="errorMessage" id="errorMessage"></p>
+          <label for="username">Enter a username</label>
+          <input
+            type="text"
+            name="username"
+            id="usernameField"
+            minlength="3"
+            max="25"
+          />
+          <button class="otherButtons">Save</button>
+        </form>
       </div>
     </div>
 
